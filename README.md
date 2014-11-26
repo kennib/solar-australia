@@ -7,6 +7,6 @@ The team who can do this using the least amount of land for solar arrays will be
 ## How to submit your solar arrays
 
 ```bash
-$ curl localhost:3000/submit --form "submission=@solararrays.geojson"
-Thanks! You are ranked 1.
+$ curl localhost:3000/submit --form "submission=@solararrays.geojson" --form "team=winners"
+Thanks team 'winners'! You are ranked 1.
 ```
