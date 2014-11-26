@@ -2,5 +2,5 @@ module Game.SolarPower where
 
 import Data.SolarPower
 
-rank :: a -> Int
-rank a = 1
+score :: [SolarArray] -> Float
+score = fromIntegral . length
