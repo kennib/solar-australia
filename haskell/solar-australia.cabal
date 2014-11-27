@@ -28,3 +28,13 @@ executable solar-australia
                ,       transformers >=0.3 && <0.4
   hs-source-dirs:      src
   default-language:    Haskell2010
+
+executable convertNCtoJSON
+  main-is:             convertNCtoJSON.hs
+  -- other-modules:       
+  -- other-extensions:    
+  build-depends:       base >=4.6 && <4.7
+               ,       hnetcdf >=0.2.1.0 && <0.3
+               ,       vector >=0.10.0.1 && <0.11
+  hs-source-dirs:      src/Data/
+  default-language:    Haskell2010
