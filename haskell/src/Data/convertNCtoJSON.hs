@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Monad (forM, mapM)
 import Data.List (transpose)
 import Data.ByteString.Lazy.Internal (ByteString)
 
@@ -13,6 +14,9 @@ import Data.Geospatial
 import Data.LinearRing
 import GHC.Float (float2Double)
 
+import System.Directory
+import System.FilePath
+
 type SVRet a = IO (Either NcError (SV.Vector a))
 
 type Point a = (CDouble, CDouble)
@@ -20,16 +24,20 @@ type Polygon a = [Point a]
 type GHI a = a
 
 main = do
-	ghiData <- extractData file
-	case ghiData of
+	let dir = "../data"
+	files <- getDirectoryContents dir
+	let netcdfs = map (combine dir) $ filter ((== ".nc") . takeExtension) files
+	ghiData <- forM netcdfs extractData
+	let ghiData' = mapM (\x -> case x of
 		Right (lat, lng, ghi) -> do
 			let tiles = getTiles lat lng
 			let ghis = getGhi ghi
-			let geo = geojson tiles ghis
-			print $ encode geo
+			Right (tiles, ghis)
+		Left err -> Left err) ghiData
+	
+	case ghiData' of
+		Right ((tiles, ghi):gs) -> print . encode $ geojson tiles $ ghi:(map snd gs)
 		Left err -> print err
-
-file = "../data/20120101.nc"
 
 extractData :: String -> IO (Either NcError (SV.Vector CDouble, SV.Vector CDouble, SV.Vector CDouble))
 extractData fname = do
@@ -70,10 +78,10 @@ adjacents [] = []
 getGhi :: SV.Vector CDouble -> [[GHI CDouble]]
 getGhi ghis = [SV.toList ghis]
 
-geojson :: [[Polygon CDouble]] -> [[CDouble]] -> GeoFeatureCollection Float
+geojson :: [[Polygon CDouble]] -> [[[CDouble]]] -> GeoFeatureCollection [Float]
 geojson tiles ds = GeoFeatureCollection Nothing features 
 	where features = zipWith (\p d -> GeoFeature Nothing p d Nothing) polygons props
-	      props = map toFloat $ concat ds 
+	      props = transpose $ map (map toFloat . concat) ds 
 	      polygons = map (Polygon . GeoPolygon) $ map (ring . map coords) $ concat tiles
 	      coords (lat, lng) = [float2Double $ toFloat lat, float2Double $ toFloat lng]
 	      ring (a:b:c:ds) = [makeLinearRing a b c ds]
