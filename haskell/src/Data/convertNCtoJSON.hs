@@ -9,7 +9,7 @@ import Data.NetCDF.Vector
 import Foreign.C
 import qualified Data.Vector.Storable as SV
 
-import Data.Aeson.Encode (encode)
+import Data.Aeson (encode, object, ToJSON, toJSON, (.=))
 import Data.Geospatial
 import Data.LinearRing
 import GHC.Float (float2Double)
@@ -22,6 +22,8 @@ type SVRet a = IO (Either NcError (SV.Vector a))
 type Point a = (CDouble, CDouble)
 type Polygon a = [Point a]
 type GHI a = a
+
+data Props = Props { ghis :: [GHI Float] }
 
 main = do
 	let dir = "../data"
@@ -78,13 +80,16 @@ adjacents [] = []
 getGhi :: SV.Vector CDouble -> [[GHI CDouble]]
 getGhi ghis = [SV.toList ghis]
 
-geojson :: [[Polygon CDouble]] -> [[[CDouble]]] -> GeoFeatureCollection [Float]
+geojson :: [[Polygon CDouble]] -> [[[CDouble]]] -> GeoFeatureCollection Props 
 geojson tiles ds = GeoFeatureCollection Nothing features 
 	where features = zipWith (\p d -> GeoFeature Nothing p d Nothing) polygons props
-	      props = transpose $ map (map toFloat . concat) ds 
+	      props = map Props $ transpose $ map (map toFloat . concat) ds 
 	      polygons = map (Polygon . GeoPolygon) $ map (ring . map coords) $ concat tiles
 	      coords (lat, lng) = [float2Double $ toFloat lat, float2Double $ toFloat lng]
 	      ring (a:b:c:ds) = [makeLinearRing a b c ds]
 
 toFloat :: RealFloat a => a -> Float
 toFloat = uncurry encodeFloat . decodeFloat
+
+instance ToJSON Props where
+	toJSON (Props ghis) = object ["ghis" .= ghis]
