@@ -64,7 +64,7 @@ extractData fname = do
 		Left err -> return $ Left err
 
 getTiles :: SV.Vector CDouble -> SV.Vector CDouble -> [[Polygon CDouble]]
-getTiles lat lng = squares lat' lng'
+getTiles lat lng = squares lng' lat'
 	where lat' = SV.toList lat
 	      lng' = SV.toList lng
 
