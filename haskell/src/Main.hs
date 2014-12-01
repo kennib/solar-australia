@@ -5,6 +5,9 @@ import Data.ByteString.Lazy.Char8 as BS
 import Control.Monad.IO.Class
 import Control.Applicative
 
+import Data.Aeson (decode)
+import Data.Geospatial (GeoFeatureCollection (..))
+
 import Web.Scotty
 import Network.Wai.Parse
 
@@ -30,17 +33,20 @@ main = do
 			fs <- files
 			let fs' = [ BS.unpack $ fileContent fi | (fieldName, fi) <- fs ]
 			
-			liftIO $ case fs' of
-				[]   -> return ()
-				f:_  -> submit conn team $ readSolarArrays f
+			let geofeatures = case fs' of
+				[]   -> Just $ GeoFeatureCollection Nothing []
+				f:_  -> decode $ BS.pack f :: Maybe (GeoFeatureCollection Props)
 
-			rank <- liftIO $ case fs' of
-				[]  -> return 0
-				f:_ -> rank conn team $ readSolarArrays f
+			let arrays = case geofeatures of
+				Just gfs -> readSolarArrays gfs
+				Nothing  -> []
 
-			case fs' of
-				[]   -> text . Text.pack $ "You forgot to send a file!"
-				f:_  -> text . Text.pack $ "Thanks team '" ++ teamname team ++ "'! You are ranked " ++ show rank ++ ". With a score of " ++ (show $ score $ readSolarArrays f)
+			liftIO $ submit conn team arrays
+			rank <- liftIO $ rank conn team arrays
+
+			text . Text.pack $ "Thanks team '" ++ teamname team ++
+			                   "'! You are ranked " ++ show rank ++
+                               ". With a score of " ++ (show $ score arrays)
 
 
 initDB :: Connection -> IO ()

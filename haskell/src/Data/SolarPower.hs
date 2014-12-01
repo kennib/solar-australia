@@ -1,6 +1,8 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Data.SolarPower where
 
-import Data.Aeson (decode, FromJSON, parseJSON, obj)
+import Data.Aeson (decode, FromJSON, parseJSON)
+import Data.Aeson.Types
 import Data.Geospatial
 
 data SolarArray = SolarArray [Double] Int
@@ -8,13 +10,16 @@ data SolarArray = SolarArray [Double] Int
 
 data Props = Props { panels :: Int }
 
-readSolarArrays :: GeoFeatureCollection -> [SolarArray]
-readSolarArrays geo = SolarArray coords $ panels props
-	where coords = (_geometry . _geofeatures) geo
-	      panels = (_properties . _geofeatures) geo :: Props
+readSolarArrays :: GeoFeatureCollection Props -> [SolarArray]
+readSolarArrays geo = zipWith SolarArray coords panelCounts
+	where coords = (map _unGeoPoint . map getPoint . filter isPoint . map _geometry . _geofeatures) geo :: [[Double]]
+	      panelCounts = (map panels . map _properties . _geofeatures) geo :: [Int]
+	      isPoint (Point g) = True
+	      isPoint _ = False
+	      getPoint (Point g) = g
 
-instance FromJSON where
-	parseJSON parseJSON (Object obj) = do
+instance FromJSON Props where
+	parseJSON (Object obj) = do
 		panels <- obj .: "panels"
-		Props panels
-	parseJSON _ = Props 0
+		return $ Props panels
+	parseJSON _ = return $ Props 0
