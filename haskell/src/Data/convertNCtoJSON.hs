@@ -23,26 +23,26 @@ type Point a = (CDouble, CDouble)
 type Polygon a = [Point a]
 type GHI a = a
 
-data Props = Props { ghis :: [GHI Float] }
+data Props = Props { avgGHI :: GHI Float }
 
 main = do
 	let dir = "../data"
 	files <- getDirectoryContents dir
 	let netcdfs = map (combine dir) $ filter ((== ".nc") . takeExtension) files
-	ghiData <- forM netcdfs extractData
+	ghiData <- forM netcdfs extractGhi
 	let ghiData' = mapM (\x -> case x of
-		Right (lat, lng, ghi) -> do
-			let tiles = getTiles lat lng
-			let ghis = getGhi ghi
-			Right (tiles, ghis)
+		Right ghi -> Right $ getGhi ghi
 		Left err -> Left err) ghiData
+	latLngData <- extractLatLng $ head netcdfs
 	
-	case ghiData' of
-		Right ((tiles, ghi):gs) -> print . encode $ geojson tiles $ ghi:(map snd gs)
+	case latLngData of
+		Right (lat, lng) -> (case ghiData' of
+			Right ghis -> putStr . encode $ geojson (tilePolygons $ getTiles lat lng) ghis
+			Left err -> print err)
 		Left err -> print err
 
-extractData :: String -> IO (Either NcError (SV.Vector CDouble, SV.Vector CDouble, SV.Vector CDouble))
-extractData fname = do
+extractLatLng :: String -> IO (Either NcError (SV.Vector CDouble, SV.Vector CDouble))
+extractLatLng fname = do
 	enc <- openFile fname
 	case enc of
 		Right nc -> do
@@ -52,16 +52,27 @@ extractData fname = do
 			let (Just var) = ncVar nc "longitude"
 			lngs <- get nc var :: SVRet CDouble
 
+			case (lats, lngs) of
+				(Right lat, Right lng) -> return $ Right (lat, lng)
+				(Left err, _)          -> return $ Left err
+				(_, Left err)          -> return $ Left err
+
+		Left err -> return $ Left err
+
+extractGhi :: String -> IO (Either NcError (SV.Vector CDouble))
+extractGhi fname = do
+	enc <- openFile fname
+	case enc of
+		Right nc -> do
 			let (Just var) = ncVar nc "solar_exposure_day"
 			ghis <- get nc var :: SVRet CDouble
 
-			case (lats, lngs, ghis) of
-				(Right lat, Right lng, Right ghi) -> return $ Right (lat, lng, ghi)
-				(Left err, _, _)-> return $ Left err
-				(_, Left err, _)-> return $ Left err
-				(_, _, Left err)-> return $ Left err
+			case ghis of
+				Right ghi -> return $ Right ghi
+				Left err  -> return $ Left err
 
 		Left err -> return $ Left err
+
 
 getTiles :: SV.Vector CDouble -> SV.Vector CDouble -> [[Polygon CDouble]]
 getTiles lat lng = squares lng' lat'
@@ -80,16 +91,21 @@ adjacents [] = []
 getGhi :: SV.Vector CDouble -> [[GHI CDouble]]
 getGhi ghis = [SV.toList ghis]
 
-geojson :: [[Polygon CDouble]] -> [[[CDouble]]] -> GeoFeatureCollection Props 
-geojson tiles ds = GeoFeatureCollection Nothing features 
-	where features = zipWith (\p d -> GeoFeature Nothing p d Nothing) polygons props
-	      props = map Props $ transpose $ map (map toFloat . concat) ds 
-	      polygons = map (Polygon . GeoPolygon) $ map (ring . map coords) $ concat tiles
+tilePolygons :: [[Polygon CDouble]] -> [GeospatialGeometry]
+tilePolygons tiles = polygons
+	where polygons = map (Polygon . GeoPolygon) $ map (ring . map coords) $ concat tiles
 	      coords (lat, lng) = [float2Double $ toFloat lat, float2Double $ toFloat lng]
 	      ring (a:b:c:ds) = [makeLinearRing a b c ds]
+
+geojson :: [GeospatialGeometry] -> [[[CDouble]]] -> GeoFeatureCollection Props 
+geojson polys ds = GeoFeatureCollection Nothing features 
+	where features = zipWith (\p d -> GeoFeature Nothing p d Nothing) polys props
+	      props = map Props $ map average $ map (filter (-999 /=)) $ transpose $ map (map toFloat . concat) ds 
+	      average [] = 0
+	      average x = sum x / (fromIntegral $ length x)
 
 toFloat :: RealFloat a => a -> Float
 toFloat = uncurry encodeFloat . decodeFloat
 
 instance ToJSON Props where
-	toJSON (Props ghis) = object ["ghis" .= ghis]
+	toJSON (Props ghi) = object ["avgGHI" .= ghi]
