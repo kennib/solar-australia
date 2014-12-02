@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import System.Exit (exitFailure)
+
 import Data.Text.Lazy as Text
 import Data.ByteString.Lazy.Char8 as BS
 import Control.Monad.IO.Class
@@ -26,28 +28,36 @@ main :: IO ()
 main = do
 	conn <- open "solarpower.db"
 	initDB conn
+	geojson <- loadScoringData "../data/ghi.geojson"
+	case geojson of
+		Left err -> print err >> exitFailure
+		Right ghis -> scotty 3000 (app conn ghis)
 
-	scotty 3000 $ do
-		post "/submit" $ do
-			team <- fmap Team $ param "team"
-			fs <- files
-			let fs' = [ fileContent fi | (fieldName, fi) <- fs ]
-			
-			let geofeatures = case fs' of
-				[]   -> return $ GeoFeatureCollection Nothing []
-				f:_  -> eitherDecode f :: Either String (GeoFeatureCollection Props)
+app conn ghis = do
+	post "/submit" $ do
+		team <- fmap Team $ param "team"
+		fs <- files
+		let fs' = [ fileContent fi | (fieldName, fi) <- fs ]
 
-			let arrays = case geofeatures of
-				Right gfs -> readSolarArrays gfs
-				Left err -> []
+		let geofeatures = case fs' of
+			[]   -> return $ GeoFeatureCollection Nothing []
+			f:_  -> eitherDecode f :: Either String (GeoFeatureCollection Props)
 
-			liftIO $ submit conn team arrays
-			rank <- liftIO $ rank conn team arrays
+		let arrays = case geofeatures of
+			Right gfs -> readSolarArrays gfs
+			Left err -> []
 
-			text . Text.pack $ "Thanks team '" ++ teamname team ++
-			                   "'! You are ranked " ++ show rank ++
-                               ". With a score of " ++ (show $ score arrays)
+		liftIO $ submit conn team arrays
+		rank <- liftIO $ rank conn team arrays
 
+		text . Text.pack $ "Thanks team '" ++ teamname team ++
+						   "'! You are ranked " ++ show rank ++
+						   ". With a score of " ++ (show $ score arrays)
+
+loadScoringData :: String -> IO (Either String (GeoFeatureCollection PropsGHI))
+loadScoringData fname = do
+	f <- BS.readFile fname
+	return $ eitherDecode f
 
 initDB :: Connection -> IO ()
 initDB conn = execute_ conn "create table if not exists submissions (submission INTEGER PRIMARY KEY AUTOINCREMENT, team TEXT, arrays TEXT, score FLOAT);"

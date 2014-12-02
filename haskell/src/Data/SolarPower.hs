@@ -12,6 +12,9 @@ data SolarArray = SolarArray [[Double]] Int
 data Props = Props { panels :: Int }
 	deriving (Show)
 
+data PropsGHI = PropsGHI { averageGHI :: Float }
+	deriving (Show)
+
 readSolarArrays :: GeoFeatureCollection Props -> [SolarArray]
 readSolarArrays geo = zipWith SolarArray (coords geo) (panelCounts geo)
 panelCounts = (map panels . map _properties . _geofeatures)
@@ -25,3 +28,9 @@ instance FromJSON Props where
 		panels <- obj .: "panels"
 		return $ Props panels
 	parseJSON _ = return $ Props 0
+
+instance FromJSON PropsGHI where
+	parseJSON (Object obj) = do
+		ghi <- obj .: "avgGHI"
+		return $ PropsGHI ghi
+	parseJSON _ = return $ PropsGHI 0
