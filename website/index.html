@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+</head>
+<body>
+<h1 id="solar-powering-australia">Solar Powering Australia</h1>
+<p>The aim of the game is to power Australia completely with Solar Energy. The team that can produce the most money for the least money spent on solar arrays will be victorious!</p>
+<h2 id="the-details">The details</h2>
+<p>The data set for how much energy is Australia is divided into <code>839*769</code> 5km^2 tiles. For each tile there is an <code>avgGHI</code> property which indicates how many MegaJoules of energy that that tile recieves per day.</p>
+<p>You can <a href="/static/ghis.geojson.zip">download the data as GeoJSON here</a>.</p>
+<p>Your aim is to place solar farms in such a way that you can minimize costs and maximize revenues. There is one solar farm per tile, however each solar farm can have a number of tiles. There is a maximum of 2500^2 1m^2 solar panels per solar farm.</p>
+<p>Your output should be a subset of the tiles in the GHI GeoJSON. Each tile in the GeoJSON should have the property &quot;panels&quot; which indicates the number of panels in the solar farm.</p>
+<h2 id="how-to-submit-your-solar-arrays">How to submit your solar arrays</h2>
+<pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">curl</span> localhost:3000/submit --form <span class="st">&quot;submission=@solararrays.geojson&quot;</span> --form <span class="st">&quot;team=winners&quot;</span>
+<span class="kw">Thanks</span> team <span class="st">&#39;winners&#39;</span>! You are ranked 1. With a score of 1337.5</code></pre>
+<h2 id="the-cost-function">The cost function</h2>
+<p>Australia needs a lot of energy per year. The amount you should be able to produce in KWh is</p>
+<pre><code>energy-needed = 239.3e12</code></pre>
+<p>The basic function for the amount of money that can be made from a set of solar panels is</p>
+<pre><code>profit = min(energy-produced, energy-needed) * energy-price - solar-farm-cost</code></pre>
+<p>The amount of energy produced is</p>
+<pre><code>energy-produced = energy-produced-per-tile for each tile</code></pre>
+<p>The amount of energy that can be produced by a solar panel on a particular tile in a year is</p>
+<pre><code>energy-produced-per-tile = min(number-of-panels, max-panel-area) * tile-ghi * (KWh/J) * panel-efficiency * 365
+max-panel-area = 2500^2
+panel-efficiency = 0.4
+KWh/MJ = 3.6</code></pre>
+<p>Note that there is a maximum of 5km^2 worth of solar panels.</p>
+<p>You can sell your energy for 12 cents per KWh</p>
+<pre><code>energy-price = 0.12</code></pre>
+<p>The cost of a solar farm is</p>
+<pre><code>solar-farm-cost = standalone-cost +  number-of-panels * panel-cost
+standalone-cost = 55e6 (if not next to a tile containing another solar farm)
+panel-cost = 600</code></pre>
+</body>
+</html>

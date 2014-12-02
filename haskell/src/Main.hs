@@ -37,6 +37,7 @@ main = do
 			scotty 3000 $ app conn ghis
 
 app conn ghis = do
+	get "/" $ file "../website/index.html"
 	post "/submit" $ do
 		team <- fmap Team $ param "team"
 		fs <- files
