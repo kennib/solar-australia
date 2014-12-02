@@ -3,10 +3,13 @@ module Data.SolarPower where
 
 import Data.Aeson (decode, FromJSON, parseJSON)
 import Data.Aeson.Types
-import Data.Geospatial
+import Data.Geospatial hiding (properties)
 import Data.LinearRing
 
 data SolarArray = SolarArray [[Double]] Int
+	deriving (Show)
+
+data GHI = GHI [[Double]] Float
 	deriving (Show)
 
 data Props = Props { panels :: Int }
@@ -17,7 +20,13 @@ data PropsGHI = PropsGHI { averageGHI :: Float }
 
 readSolarArrays :: GeoFeatureCollection Props -> [SolarArray]
 readSolarArrays geo = zipWith SolarArray (coords geo) (panelCounts geo)
-panelCounts = (map panels . map _properties . _geofeatures)
+panelCounts = map panels . properties
+
+readGHIs :: GeoFeatureCollection PropsGHI -> [GHI]
+readGHIs geo = zipWith GHI (coords geo) (ghis geo)
+ghis = map averageGHI . properties
+
+properties = map _properties . _geofeatures
 coords = (map fromLinearRing . map head . map _unGeoPolygon . map getPolygon . filter isPolygon . map _geometry . _geofeatures)
 	where isPolygon (Polygon g) = True
 	      isPolygon _ = False
