@@ -38,6 +38,7 @@ main = do
 
 app conn ghis = do
 	get "/" $ file "../website/index.html"
+	get "/static/ghis.geojson.zip" $ file "../data/ghi.geojson.zip"
 	post "/submit" $ do
 		team <- fmap Team $ param "team"
 		fs <- files
