@@ -1,7 +1,7 @@
 # Solar Powering Australia
 
 The aim of the game is to power Australia completely with Solar Energy.
-The team who can do this using the least amount of land for solar arrays will be victorious!
+The team that can produce the most money for the least money spent on solar arrays will be victorious!
 
 
 ## How to submit your solar arrays
