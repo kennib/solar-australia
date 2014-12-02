@@ -5,7 +5,7 @@ import Data.ByteString.Lazy.Char8 as BS
 import Control.Monad.IO.Class
 import Control.Applicative
 
-import Data.Aeson (decode)
+import Data.Aeson (decode, eitherDecode)
 import Data.Geospatial (GeoFeatureCollection (..))
 
 import Web.Scotty
@@ -31,15 +31,15 @@ main = do
 		post "/submit" $ do
 			team <- fmap Team $ param "team"
 			fs <- files
-			let fs' = [ BS.unpack $ fileContent fi | (fieldName, fi) <- fs ]
+			let fs' = [ fileContent fi | (fieldName, fi) <- fs ]
 			
 			let geofeatures = case fs' of
-				[]   -> Just $ GeoFeatureCollection Nothing []
-				f:_  -> decode $ BS.pack f :: Maybe (GeoFeatureCollection Props)
+				[]   -> return $ GeoFeatureCollection Nothing []
+				f:_  -> eitherDecode f :: Either String (GeoFeatureCollection Props)
 
 			let arrays = case geofeatures of
-				Just gfs -> readSolarArrays gfs
-				Nothing  -> []
+				Right gfs -> readSolarArrays gfs
+				Left err -> []
 
 			liftIO $ submit conn team arrays
 			rank <- liftIO $ rank conn team arrays
