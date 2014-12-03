@@ -28,17 +28,20 @@ code > span.er { color: #ff0000; font-weight: bold; }
 </head>
 <body>
 <h1 id="solar-powering-australia">Solar Powering Australia</h1>
-<p>The aim of the game is to power Australia completely with Solar Energy. The team that can produce the most money for the least money spent on solar arrays will be victorious!</p>
-<p>Money money.</p>
-<p><a href="/scoreboard">View the scores</a></p>
+<p>Your aim is to power Australia completely with Solar Energy. The team that can power australia while making the most money will be victorious!</p>
 <h2 id="the-details">The details</h2>
-<p>The data set for how much energy is in Australia is divided into <code>839*769</code> 5km^2 tiles. For each tile there is an <code>avgGHI</code> property which indicates how many MegaJoules of energy that that tile recieves per day.</p>
+<h3 id="the-aim">The aim</h3>
+<p>Your aim is to place solar farms in such a way that you can minimize costs and maximize revenues. The best areas to place solar farms will be those that are given the most energy from the Sun.</p>
+<h3 id="input-data">Input data</h3>
+<p>The input data gives us the GHI (Global Horizontal Irradiance) for the entire area of Australia. The dataset consists of 839 by 769 tiles 5km high and 5km wide.</p>
+<p>We've prepare the data as <a href="http://geojson.org/geojson-spec.html">GeoJSON file</a>. In this GeoJSON file for each tile there is an <code>avgGHI</code> property. The average GHI indicates how many MegaJoules of energy that tile recieves per day from the Sun.</p>
 <p>You can <a href="/data/ghis.geojson.zip">download the data as GeoJSON here</a>.</p>
-<p>Your aim is to place solar farms in such a way that you can minimize costs and maximize revenues. There is one solar farm per tile, however each solar farm can have a number of panels. There is a maximum of 2500^2 1m^2 solar panels per solar farm.</p>
-<p>Your output should be a subset of the tiles in the GHI GeoJSON. Each tile in the GeoJSON should have the property &quot;panels&quot; which indicates the number of panels in the solar farm.</p>
-<h2 id="how-to-submit-your-solar-arrays">How to submit your solar arrays</h2>
-<pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">curl</span> nicta-kenni:3000/submit --form <span class="st">&quot;submission=@solararrays.geojson&quot;</span> --form <span class="st">&quot;team=winners&quot;</span>
-<span class="kw">Thanks</span> team <span class="st">&#39;winners&#39;</span>! You are ranked 1. With a score of 1337.5</code></pre>
+<h3 id="output-data">Output data</h3>
+<p>Your output should be a subset of the tiles in the GHI GeoJSON. Each tile in the GeoJSON should have the property <code>panels</code> which indicates the number of panels in the solar farm. Don't include panels which do not have solar farms on them.</p>
+<h3 id="submission">Submission</h3>
+<p>You can submit your file from the command line via curl. Here's an example of a submission of <code>solarfarms.geojson</code>:</p>
+<pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">curl</span> localhost:3000/submit --form <span class="st">&quot;submission=@solarfarms.geojson&quot;</span> --form <span class="st">&quot;team=winners&quot;</span>
+<span class="kw">Thanks</span> team <span class="st">&#39;winners&#39;</span>! You are ranked 1. With a score of 1.337e8</code></pre>
 <h2 id="the-cost-function">The cost function</h2>
 <p>Australia needs a lot of energy per year. The amount you should be able to produce in KWh is</p>
 <pre><code>energy-needed = 239.3e12</code></pre>
@@ -51,13 +54,12 @@ code > span.er { color: #ff0000; font-weight: bold; }
 max-panel-area = 2500^2
 panel-efficiency = 0.4
 KWh/MJ = 3.6</code></pre>
-<p>Note that there is a maximum of 2.5km^2 worth of solar panels which are 1m^2 each. That is, there is a maximum of 2500*2500 panels per solar farm.</p>
+<p>Note that each panel is 1m^2 and there is a maximum of 2500m^2 worth of solar panels.</p>
 <p>You can sell your energy for 12 cents per KWh</p>
 <pre><code>energy-price = 0.12</code></pre>
 <p>The cost of a solar farm is</p>
-<pre><code>solar-farm-cost = standalone-cost +  number-of-panels * panel-cost
+<pre><code>solar-farm-cost = standalone-cost + number-of-panels * panel-cost
 standalone-cost = 55e6 (if not next to a tile containing another solar farm)
 panel-cost = 600</code></pre>
-<p>Solar Farms will be considered adjacent if the two tiles they are on share a point. So for example, two diagonal tiles are adjacent.</p>
 </body>
 </html>

@@ -1,26 +1,36 @@
 # Solar Powering Australia
 
-The aim of the game is to power Australia completely with Solar Energy.
-The team that can produce the most money for the least money spent on solar arrays will be victorious!
+Your aim is to power Australia completely with Solar Energy.
+The team that can power australia while making the most money will be victorious!
 
 ## The details
-The data set for how much energy is Australia is divided into `839*769` 5km^2 tiles.
-For each tile there is an `avgGHI` property which indicates how many MegaJoules of energy that that tile recieves per day.
+### The aim
+Your aim is to place solar farms in such a way that you can minimize costs and maximize revenues.
+The best areas to place solar farms will be those that are given the most energy from the Sun. 
+
+### Input data
+The input data gives us the GHI (Global Horizontal Irradiance) for the entire area of Australia.
+The dataset consists of 839 by 769 tiles 5km high and 5km wide.
+
+We've prepare the data as [GeoJSON file](http://geojson.org/geojson-spec.html).
+In this GeoJSON file for each tile there is an `avgGHI` property.
+The average GHI indicates how many MegaJoules of energy that tile recieves per day from the Sun.
 
 You can [download the data as GeoJSON here](/data/ghis.geojson.zip).
 
-Your aim is to place solar farms in such a way that you can minimize costs and maximize revenues.
-There is one solar farm per tile, however each solar farm can have a number of tiles.
-There is a maximum of 2500^2 1m^2 solar panels per solar farm.
-
+### Output data
 Your output should be a subset of the tiles in the GHI GeoJSON.
-Each tile in the GeoJSON should have the property "panels" which indicates the number of panels in the solar farm.
+Each tile in the GeoJSON should have the property `panels` which indicates the number of panels in the solar farm.
+Don't include panels which do not have solar farms on them.
 
-## How to submit your solar arrays
+### Submission
+
+You can submit your file from the command line via curl.
+Here's an example of a submission of `solarfarms.geojson`:
 
 ```bash
-$ curl localhost:3000/submit --form "submission=@solararrays.geojson" --form "team=winners"
-Thanks team 'winners'! You are ranked 1. With a score of 1337.5
+$ curl localhost:3000/submit --form "submission=@solarfarms.geojson" --form "team=winners"
+Thanks team 'winners'! You are ranked 1. With a score of 1.337e8
 ```
 
 ## The cost function
@@ -41,12 +51,12 @@ energy-produced = energy-produced-per-tile for each tile
 
 The amount of energy that can be produced by a solar panel on a particular tile in a year is
 ```
-energy-produced-per-tile = min(number-of-panels, max-panel-area) * tile-ghi * (KWh/J) * panel-efficiency * 365
+energy-produced-per-tile = min(number-of-panels, max-panel-area) * tile-ghi * (KWh/MJ) * panel-efficiency * 365
 max-panel-area = 2500^2
 panel-efficiency = 0.4
 KWh/MJ = 3.6
 ```
-Note that there is a maximum of 5km^2 worth of solar panels.
+Note that each panel is 1m^2 and there is a maximum of 2500m^2 worth of solar panels.
 
 You can sell your energy for 12 cents per KWh
 ```
@@ -55,7 +65,7 @@ energy-price = 0.12
 
 The cost of a solar farm is
 ```
-solar-farm-cost = standalone-cost +  number-of-panels * panel-cost
+solar-farm-cost = standalone-cost + number-of-panels * panel-cost
 standalone-cost = 55e6 (if not next to a tile containing another solar farm)
 panel-cost = 600
 ```
