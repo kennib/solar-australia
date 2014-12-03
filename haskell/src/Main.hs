@@ -39,6 +39,11 @@ main = do
 app conn ghis = do
 	get "/" $ file "../website/index.html"
 	get "/static/ghis.geojson.zip" $ file "../data/ghi.geojson.zip"
+
+	get "/scoreboard" $ do
+		sb <- liftIO $ scoreboard conn
+		html $ Text.pack $ "<ol>" ++ Prelude.concat ["<li><b>"++team++"</b> "++show score++"</li>" | (team, score) <- sb] ++ "</ol>"
+
 	post "/submit" $ do
 		team <- fmap Team $ param "team"
 		fs <- files
@@ -78,3 +83,6 @@ rank conn (Team team) tscore = do
 	return $ case rows of
 		r:_ -> r
 		[]  -> 0
+
+scoreboard :: Connection -> IO [(String, Float)]
+scoreboard conn = query_ conn "select team, max(score) as score from submissions group by team order by score desc;"

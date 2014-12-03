@@ -41,4 +41,4 @@ score :: [SolarArray] -> [GHI] -> Float
 score arrays ghis = sum tilesWithPanels
 	where tilesWithPanels = [profit ghi panels | GHI coords ghi <- ghis,
 	                                                     SolarArray coords' panels <- arrays,
-	                                                     coords==coords']
+	                                                     coords==coords', panels >= 0]
