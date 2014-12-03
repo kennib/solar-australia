@@ -13,6 +13,7 @@ import Data.Geospatial (GeoFeatureCollection (..))
 
 import Web.Scotty
 import Network.Wai.Parse
+import Network.Wai.Middleware.Static
 
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromRow
@@ -37,8 +38,9 @@ main = do
 			scotty 3000 $ app conn ghis
 
 app conn ghis = do
-	get "/" $ file "../website/index.html"
-	get "/static/ghis.geojson.zip" $ file "../data/ghi.geojson.zip"
+	middleware $ staticPolicy (noDots >-> addBase "../website")
+
+	get "/" $ redirect "/index.html"
 
 	get "/scoreboard" $ do
 		sb <- liftIO $ scoreboard conn

@@ -23,6 +23,7 @@ executable solar-australia
   build-depends:       base >=4.6 && <4.7
                ,       scotty >=0.9 && <0.10
                ,       wai-extra >=3.0 && <3.1
+               ,       wai-middleware-static >=0.6 && <0.7
                ,       text >=0.11 && <0.12
                ,       bytestring >=0.10 && <0.11
                ,       sqlite-simple >=0.4 && <0.5
