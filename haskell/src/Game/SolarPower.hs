@@ -34,11 +34,12 @@ panelsRevenue :: Int -> Float -> Float
 panelsRevenue panels ghi = energyRevenue energy 
 	where energy = min targetEnergy $ panelsEnergy panels ghi
 
-profit :: Float -> Int -> Float
-profit ghi panels = panelsRevenue panels ghi  - panelCost panels
+profit :: Float -> Float
+profit ghi = panelsRevenue maxPanels ghi  - panelCost maxPanels
 
 score :: [SolarArray] -> [GHI] -> Float
 score arrays ghis = sum tilesWithPanels
-	where tilesWithPanels = [profit ghi panels | GHI coords ghi <- ghis,
-	                                                     SolarArray coords' panels <- arrays,
-	                                                     coords==coords', panels >= 0]
+	where tilesWithPanels = [profit ghi
+	                         | GHI coords ghi <- ghis,
+	                           SolarArray coords' <- arrays,
+	                           coords == coords']

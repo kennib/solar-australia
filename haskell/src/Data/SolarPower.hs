@@ -1,26 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Data.SolarPower where
 
-import Data.Aeson (decode, FromJSON, parseJSON)
+import Data.Aeson (FromJSON)
 import Data.Aeson.Types
 import Data.Geospatial hiding (properties)
 import Data.LinearRing
 
-data SolarArray = SolarArray [[Double]] Int
+data SolarArray = SolarArray [[Double]]
 	deriving (Show)
 
 data GHI = GHI [[Double]] Float
 	deriving (Show)
 
-data Props = Props { panels :: Int }
-	deriving (Show)
-
 data PropsGHI = PropsGHI { averageGHI :: Float }
 	deriving (Show)
 
-readSolarArrays :: GeoFeatureCollection Props -> [SolarArray]
-readSolarArrays geo = zipWith SolarArray (coords geo) (panelCounts geo)
-panelCounts = map panels . properties
+data DontCare = DontCare
+
+readSolarArrays :: GeoFeatureCollection DontCare -> [SolarArray]
+readSolarArrays geo = map SolarArray (coords geo)
 
 readGHIs :: GeoFeatureCollection PropsGHI -> [GHI]
 readGHIs geo = zipWith GHI (coords geo) (ghis geo)
@@ -32,11 +30,8 @@ coords = (map fromLinearRing . map head . map _unGeoPolygon . map getPolygon . f
 	      isPolygon _ = False
 	      getPolygon (Polygon g) = g
 
-instance FromJSON Props where
-	parseJSON (Object obj) = do
-		panels <- obj .: "panels"
-		return $ Props panels
-	parseJSON _ = return $ Props 0
+instance FromJSON DontCare where
+	parseJSON _ = return DontCare
 
 instance FromJSON PropsGHI where
 	parseJSON (Object obj) = do
