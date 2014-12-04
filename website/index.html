@@ -46,6 +46,10 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <p>Your output should be a subset of the points given in the GHI GeoJSON. Each solar farm will provide power for the city to which it is closest.</p>
 <p>You can <a href="/data/solar-farms.geojson">download an example of GeoJSON with three solar farms here</a>.</p>
 <h3 id="submission">Submission</h3>
+<p>You can submit your GeoJSON through a <a href="" title="/submit">web page</a> or via the command line.</p>
+<h4 id="web">Web</h4>
+<p><a href="" title="/submit">Submit your GeoJSON</a> through the web browser.</p>
+<h4 id="command-line">Command line</h4>
 <p>You can submit your file from the command line via curl. Here's an example of a submission of <code>solarfarms.geojson</code>:</p>
 <pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">curl</span> localhost:3000/submit --form <span class="st">&quot;submission=@solarfarms.geojson&quot;</span> --form <span class="st">&quot;team=winners&quot;</span>
 <span class="kw">Thanks</span> team <span class="st">&#39;winners&#39;</span>! You are ranked 1. With a score of 1.337e8</code></pre>
