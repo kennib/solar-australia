@@ -8,7 +8,7 @@ import Data.ByteString.Lazy.Char8 as BS
 import Control.Monad.IO.Class
 import Control.Applicative
 
-import Data.Aeson (decode, eitherDecode)
+import Data.Aeson (eitherDecode)
 import Data.Geospatial (GeoFeatureCollection (..))
 
 import Web.Scotty
@@ -52,19 +52,45 @@ app conn ghis = do
 			[] -> ""
 			f:_ -> f
 
-		let geofeatures = eitherDecode f :: Either String (GeoFeatureCollection Props)
+		result <- submit conn ghis team f
+		case result of
+			Left err -> text $ case err of
+				EmptySubmission -> "Your submission was empty!\n"
+				InvalidJSON msg -> Text.pack ("Invalid GeoJSON format: " ++ msg ++ "\n")
+				UnknownError -> "Unknown error occurred.\n"
+			Right ((rank, score), succ) ->
+				let warning = case succ of
+					WarnSuccess msg -> " Warning: " ++ msg
+					_ -> ""
+				in text $ Text.pack $ "Thanks, team '" ++ teamname team ++
+				                      "'! You are ranked " ++ show rank ++
+				                      ". With a score of " ++ show score ++
+				                      "." ++ warning ++ "\n"
 
-		let arrays = case geofeatures of
-			Right gfs -> readSolarArrays gfs
-			Left err -> []
+type Submission = Either SubmissionError (SubmissionResult, SubmissionSuccess)
 
-		let tscore = score arrays ghis
-		liftIO $ submit conn team f tscore
-		rank <- liftIO $ rank conn team tscore
+data SubmissionError
+	= EmptySubmission
+	| InvalidJSON String
+	| UnknownError
 
-		text . Text.pack $ "Thanks team '" ++ teamname team ++
-						   "'! You are ranked " ++ show rank ++
-						   ". With a score of " ++ (show $ tscore)
+data SubmissionSuccess
+	= TotalSuccess
+	| WarnSuccess String
+
+type SubmissionResult = (Int, Float)
+
+submit :: Connection -> [GHI] -> Team -> ByteString -> ActionM Submission
+submit conn ghis team f = case (f, eitherDecode f) of
+	("", _) -> return $ Left EmptySubmission
+	(_, Left msg) -> return $ Left (InvalidJSON msg)
+	(_, Right gfs) -> case readSolarArrays gfs of
+		[] -> return $ Left EmptySubmission
+		arrays -> do
+			let tscore = score arrays ghis
+			liftIO $ saveSubmission conn team f tscore
+			rank <- liftIO $ rank conn team tscore
+			return $ Right ((rank, tscore), TotalSuccess)
 
 loadScoringData :: String -> IO (Either String (GeoFeatureCollection PropsGHI))
 loadScoringData fname = do
@@ -74,8 +100,8 @@ loadScoringData fname = do
 initDB :: Connection -> IO ()
 initDB conn = execute_ conn "create table if not exists submissions (submission INTEGER PRIMARY KEY AUTOINCREMENT, team TEXT, arrays TEXT, score FLOAT);"
 
-submit :: Connection -> Team -> ByteString -> Float -> IO ()
-submit conn (Team team) geojson tscore = execute conn "insert into submissions (team, arrays, score) values (?, ?, ?)" (team, geojson, tscore)
+saveSubmission :: Connection -> Team -> ByteString -> Float -> IO ()
+saveSubmission conn (Team team) geojson tscore = execute conn "insert into submissions (team, arrays, score) values (?, ?, ?)" (team, geojson, tscore)
 
 rank :: Connection -> Team -> Float -> IO Int
 rank conn (Team team) tscore = do
