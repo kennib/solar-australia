@@ -3,8 +3,10 @@ module Main where
 
 import System.Exit (exitFailure)
 
-import Data.Text.Lazy as Text
-import Data.ByteString.Lazy.Char8 as BS
+import Data.Monoid ((<>))
+import qualified Data.Text.Lazy as Text
+import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as BS
 import Control.Monad.IO.Class
 import Control.Applicative
 import Data.HashMap.Lazy (HashMap(..))
@@ -39,6 +41,9 @@ main = do
 			let ghis = readGHIs geojson
 			scotty 3000 $ app conn ghis
 
+hshow :: (Monad m, Show a) => a -> HtmlT m ()
+hshow = toHtml . show
+
 app conn ghis = do
 	middleware $ staticPolicy (noDots >-> addBase "../website")
 
@@ -46,9 +51,15 @@ app conn ghis = do
 
 	get "/scoreboard" $ do
 		sb <- liftIO $ scoreboard conn
-		html $ Text.pack $ "<ol>" ++ Prelude.concat ["<li><b>"++team++"</b> "++show score++"</li>" | (team, score) <- sb] ++ "</ol>"
+		html . renderText $ do
+			link_ [rel_ "stylesheet", href_ "main.css"]
+			table_ $ do
+				tr_ $ th_ "Rank" >> th_ "Team" >> th_ "Profit"
+				sequence [tr_ (td_ (hshow rank) >> td_ (toHtml team) >> td_ ("$" <> hshow score))
+				          | (rank, (team, score)) <- zip [1..] sb]
 
 	get "/submit" $ html . renderText $ do
+		link_ [rel_ "stylesheet", href_ "main.css"]
 		form_ [action_ "/submit", method_ "post", enctype_ "multipart/form-data"] $ do
 			p_ "Choose a .geojson file to enter. Maximum file size is 3MB."
 			p_ $ do
