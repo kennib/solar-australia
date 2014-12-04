@@ -36,39 +36,37 @@ Thanks team 'winners'! You are ranked 1. With a score of 1.337e8
 ```
 
 ## The cost function
-Australia needs a lot of energy per year. The amount you should be able to produce in KWh is
+Australia needs a lot of energy per year. The amount you should be able to produce is
 ```
-energy-needed = 239.3e12
-```
-
-The basic function for the amount of money that can be made from a set of solar panels is
-```
-profit = min(energy-produced, energy-needed) * energy-price - solar-farm-cost
+energy-needed = 239.3e12 KWh
 ```
 
-The amount of energy produced is
+---
+
+The amount of money tha can be made from the solar farms is
 ```
-energy-produced = energy-produced-per-tile for each tile
+profit = (min(energy-produced, energy-needed) * energy-price) - (solar-farm-cost * number-of-solar-farms)
+where (energy-price) = $0.12 per KWh
+```
+Note that you can only sell energy if it will be used.
+
+---
+
+The total amount of energy produced by a set of solar panels is
+```
+energy-produced = solar-farm-energy * number-of-solar-farms
 ```
 
-The amount of energy that can be produced by a solar panel on a particular tile in a year is
-```
-energy-produced-per-tile = min(number-of-panels, max-panel-area) * tile-ghi * (KWh/MJ) * panel-efficiency * 365
-max-panel-area = 2500^2
-panel-efficiency = 0.4
-KWh/MJ = 3.6
-```
-Note that each panel is 1m^2 and there is a maximum of 2500m^2 worth of solar panels.
+---
 
-You can sell your energy for 12 cents per KWh
+Each solar farm is based off the [Topaz Solar Farm](http://en.wikipedia.org/wiki/Topaz_Solar_Farm) (the largest solar farm in the world).
+So each farm is 5km by 5km and costs $2.5 billion dollars.
 ```
-energy-price = 0.12
+solar-farm-cost = $2.5e9
+solar-farm-energy = (ghi MJ/m^2) * (5000 m * 5000 m) * (MJ/KWh)
+where (MJ/KWh) = 3.6
 ```
+Note that the ghi will vary per solar farm. It's your job to optimise this number.
 
-The cost of a solar farm is
-```
-solar-farm-cost = standalone-cost + number-of-panels * panel-cost
-standalone-cost = 55e6 (if not next to a tile containing another solar farm)
-panel-cost = 600
-```
+
 
