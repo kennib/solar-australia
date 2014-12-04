@@ -53,6 +53,7 @@ app conn ghis = do
 		sb <- liftIO $ scoreboard conn
 		html . renderText $ do
 			link_ [rel_ "stylesheet", href_ "main.css"]
+			h1_ "Scoreboard"
 			table_ $ do
 				tr_ $ th_ "Rank" >> th_ "Team" >> th_ "Profit"
 				case sb of
@@ -62,6 +63,7 @@ app conn ghis = do
 
 	get "/submit" $ html . renderText $ do
 		link_ [rel_ "stylesheet", href_ "main.css"]
+		h1_ "Submissions"
 		form_ [action_ "/submit", method_ "post", enctype_ "multipart/form-data"] $ do
 			p_ "Choose a .geojson file to enter. Maximum file size is 3MB."
 			p_ $ do
