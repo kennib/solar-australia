@@ -35,10 +35,10 @@ main = do
 		Right ghi -> Right $ getGhi ghi
 		Left err -> Left err) ghiData
 	latLngData <- extractLatLng $ head netcdfs
-	
+
 	case latLngData of
-		Right (lat, lng) -> (case ghiData' of
-			Right ghis -> putStr . encode $ geojson (tilePolygons $ getTiles lat lng) ghis
+		Right (lats, lngs) -> (case ghiData' of
+			Right ghis -> putStr . encode $ geojson [point lat lng | lat <- toDoubleVec lats, lng <- toDoubleVec lngs] ghis
 			Left err -> print err)
 		Left err -> print err
 
@@ -74,6 +74,7 @@ extractGhi fname = do
 
 		Left err -> return $ Left err
 
+toDoubleVec = map (float2Double . toFloat) . SV.toList
 
 getTiles :: SV.Vector CDouble -> SV.Vector CDouble -> [[Polygon CDouble]]
 getTiles lat lng = squares lng' lat'
@@ -89,6 +90,9 @@ adjacents (x:x':xs) = [x, x'] : adjacents (x':xs)
 adjacents (x:[]) = []
 adjacents [] = []
 
+point :: Latitude -> Longitude -> GeospatialGeometry
+point lat lng = Point $ GeoPoint [lng, lat]
+
 getGhi :: SV.Vector CDouble -> [[CDouble]]
 getGhi ghis = [SV.toList ghis]
 
@@ -96,12 +100,12 @@ tilePolygons :: [[Polygon CDouble]] -> [GeospatialGeometry]
 tilePolygons tiles = polygons
 	where polygons = map (Polygon . GeoPolygon) $ map (ring . map coords) $ concat tiles
 	      coords (lat, lng) = [float2Double $ toFloat lat, float2Double $ toFloat lng]
-	      ring (a:b:c:ds) = [makeLinearRing b c a ds]
+	      ring (a:b:c:ds) = [makeLinearRing a b c ds]
 
 geojson :: [GeospatialGeometry] -> [[[CDouble]]] -> GeoFeatureCollection PropsGHI 
 geojson polys ds = GeoFeatureCollection Nothing features 
 	where features = zipWith (\p d -> GeoFeature Nothing p d Nothing) polys props
-	      props = map prop $ transpose $ map (map toFloat . concat) ds 
+	      props = map prop $ transpose $ map (map toFloat) $ map (concat . transpose) ds 
 	      prop = PropsGHI . average . filter (-999 /=)
 	      average [] = 0
 	      average x = sum x / (fromIntegral $ length x)
