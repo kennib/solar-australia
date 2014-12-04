@@ -37,10 +37,10 @@ You can [download an example of GeoJSON with three solar farms here](/data/solar
 
 ### Submission
 
-You can submit your GeoJSON through a [web page]("/submit") or via the command line.
+You can submit your GeoJSON through a [web page](/submit) or via the command line.
 
 #### Web
-[Submit your GeoJSON]("/submit") through the web browser.
+[Submit your GeoJSON](/submit) through the web browser.
 
 #### Command line
 You can submit your file from the command line via curl.
