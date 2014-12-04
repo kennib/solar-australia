@@ -29,6 +29,7 @@ executable solar-australia
                ,       sqlite-simple >=0.4 && <0.5
                ,       transformers >=0.3 && <0.4
                ,       aeson >=0.7
+               ,       lucid >=2.4 && <3
                ,   lens            == 4.1.*
                ,   semigroups      >= 0.13
                ,   transformers    == 0.3.*
