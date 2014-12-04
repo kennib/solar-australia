@@ -76,7 +76,7 @@ energy-per-capita-per-year = 10,712.18 kWh per year
 
 The total amount of energy produced by a set of solar panels is
 ```
-energy-produced = solar-farm-energy * number-of-solar-farms
+energy-produced = sum(solar-farm-energy for each solar-farm)
 ```
 The energy from a farm will go to its closest city
 
