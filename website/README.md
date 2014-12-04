@@ -1,5 +1,7 @@
 # Solar Powering Australia
 
+[View the scoreboard](/scoreboard)
+
 ## The aim
 Your aim is to power the 15 largest cities in Australia completely with Solar Energy.
 The team that can power Australia while making the most money will be victorious!
