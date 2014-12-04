@@ -1,0 +1,13 @@
+@import url(http://fonts.googleapis.com/css?family=Questrial|Arimo:400,700);
+
+body {
+	max-width: 800px;
+	margin: 0px auto;
+
+	font-family: 'Arimo', arial, sans-serif;
+	color: #222;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	font-family: 'Questrial', arial, sans-serif;
+}
