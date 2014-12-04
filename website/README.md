@@ -63,7 +63,8 @@ Each solar farm is based off the [Topaz Solar Farm](http://en.wikipedia.org/wiki
 So each farm is 5km by 5km and costs $2.5 billion dollars.
 ```
 solar-farm-cost = $2.5e9
-solar-farm-energy = (ghi MJ/m^2/day) * (5000 m * 5000 m) * (MJ/KWh) * (365 days)
+solar-farm-energy = (ghi MJ/m^2/day) * (5000 m * 5000 m) * (MJ/KWh) * (365 days) * (1 - transmission-loss)
+transmission-loss = (distance-to-city metres) * (1e-7 per metre)
 where (MJ/KWh) = 3.6
 ```
 Note that the ghi will vary per solar farm. It's your job to optimise this number.
