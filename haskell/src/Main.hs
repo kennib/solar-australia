@@ -57,6 +57,7 @@ app conn ghis = do
 			Left err -> text $ case err of
 				EmptySubmission -> "Your submission was empty!\n"
 				InvalidJSON msg -> Text.pack ("Invalid GeoJSON format: " ++ msg ++ "\n")
+				TooLarge -> "Your submission must be less than 3MiB (or 2.93 MB)!\n"
 				UnknownError -> "Unknown error occurred.\n"
 			Right ((rank, score), succ) ->
 				let warning = case succ of
@@ -72,6 +73,7 @@ type Submission = Either SubmissionError (SubmissionResult, SubmissionSuccess)
 data SubmissionError
 	= EmptySubmission
 	| InvalidJSON String
+	| TooLarge
 	| UnknownError
 
 data SubmissionSuccess
@@ -80,17 +82,21 @@ data SubmissionSuccess
 
 type SubmissionResult = (Int, Float)
 
+fileMaxMibibytes = 3.0
+
 submit :: Connection -> [GHI] -> Team -> ByteString -> ActionM Submission
-submit conn ghis team f = case (f, eitherDecode f) of
-	("", _) -> return $ Left EmptySubmission
-	(_, Left msg) -> return $ Left (InvalidJSON msg)
-	(_, Right gfs) -> case readSolarArrays gfs of
-		[] -> return $ Left EmptySubmission
-		arrays -> do
-			let tscore = score arrays ghis
-			liftIO $ saveSubmission conn team f tscore
-			rank <- liftIO $ rank conn team tscore
-			return $ Right ((rank, tscore), TotalSuccess)
+submit conn ghis team f = if fromIntegral (BS.length f) > fileMaxMibibytes * 1000000
+	then return $ Left TooLarge
+	else case (f, eitherDecode f) of
+		("", _) -> return $ Left EmptySubmission
+		(_, Left msg) -> return $ Left (InvalidJSON msg)
+		(f, Right gfs) -> case readSolarArrays gfs of
+			[] -> return $ Left EmptySubmission
+			arrays -> do
+				let tscore = score arrays ghis
+				liftIO $ saveSubmission conn team f tscore
+				rank <- liftIO $ rank conn team tscore
+				return $ Right ((rank, tscore), TotalSuccess)
 
 loadScoringData :: String -> IO (Either String (GeoFeatureCollection PropsGHI))
 loadScoringData fname = do
