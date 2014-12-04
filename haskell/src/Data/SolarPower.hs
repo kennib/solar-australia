@@ -6,10 +6,10 @@ import Data.Aeson.Types
 import Data.Geospatial hiding (properties)
 import Data.LinearRing
 
-data SolarArray = SolarArray [[Double]]
+data SolarArray = SolarArray [Double]
 	deriving (Show)
 
-data GHI = GHI [[Double]] Float
+data GHI = GHI [Double] Float
 	deriving (Show)
 
 data PropsGHI = PropsGHI { averageGHI :: Float }
@@ -25,10 +25,10 @@ readGHIs geo = zipWith GHI (coords geo) (ghis geo)
 ghis = map averageGHI . properties
 
 properties = map _properties . _geofeatures
-coords = (map fromLinearRing . map head . map _unGeoPolygon . map getPolygon . filter isPolygon . map _geometry . _geofeatures)
-	where isPolygon (Polygon g) = True
-	      isPolygon _ = False
-	      getPolygon (Polygon g) = g
+coords = map _unGeoPoint . map getPoint . filter isPoint . map _geometry . _geofeatures
+	where isPoint (Point g) = True
+	      isPoint _ = False
+	      getPoint (Point g) = g
 
 instance FromJSON DontCare where
 	parseJSON _ = return DontCare
