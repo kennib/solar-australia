@@ -57,7 +57,7 @@ app conn ghis = do
 			Left err -> text $ case err of
 				EmptySubmission -> "Your submission was empty!\n"
 				InvalidJSON msg -> Text.pack ("Invalid GeoJSON format: " ++ msg ++ "\n")
-				TooLarge -> "Your submission must be less than 3MiB (or 2.93 MB)!\n"
+				TooLarge -> "Your submission must be less than 3MB!\n"
 				UnknownError -> "Unknown error occurred.\n"
 			Right ((rank, score), succ) ->
 				let warning = case succ of
@@ -82,10 +82,11 @@ data SubmissionSuccess
 
 type SubmissionResult = (Int, Float)
 
-fileMaxMibibytes = 3.0
+fileMaxMegabytes = 3.0
+toBytes = (* 1024 * 1024)
 
 submit :: Connection -> [GHI] -> Team -> ByteString -> ActionM Submission
-submit conn ghis team f = if fromIntegral (BS.length f) > fileMaxMibibytes * 1000000
+submit conn ghis team f = if fromIntegral (BS.length f) > toBytes fileMaxMegabytes
 	then return $ Left TooLarge
 	else case (f, eitherDecode f) of
 		("", _) -> return $ Left EmptySubmission
