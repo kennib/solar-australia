@@ -14,6 +14,7 @@ import Data.Geospatial (GeoFeatureCollection (..))
 import Web.Scotty
 import Network.Wai.Parse
 import Network.Wai.Middleware.Static
+import Lucid
 
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromRow
@@ -45,6 +46,17 @@ app conn ghis = do
 	get "/scoreboard" $ do
 		sb <- liftIO $ scoreboard conn
 		html $ Text.pack $ "<ol>" ++ Prelude.concat ["<li><b>"++team++"</b> "++show score++"</li>" | (team, score) <- sb] ++ "</ol>"
+
+	get "/submit" $ html . renderText $ do
+		form_ [action_ "/submit", method_ "post", enctype_ "multipart/form-data"] $ do
+			p_ "Choose a .geojson file to enter. Maximum file size is 3MB."
+			p_ $ do
+				label_ "Team name: "
+				input_ [type_ "text", name_ "team"] >> br_  []
+			p_ $ do
+				label_ "Submission: "
+				input_ [type_ "file", name_ "submission"] >> br_  []
+			p_ $ input_ [type_ "submit", value_ "Submit!", name_ "submit"]
 
 	post "/submit" $ do
 		team <- fmap Team $ param "team"
