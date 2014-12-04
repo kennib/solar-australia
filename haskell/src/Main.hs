@@ -10,6 +10,9 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 import Control.Monad.IO.Class
 import Control.Applicative
 import Data.HashMap.Lazy (HashMap(..))
+import Data.List.Split
+import Data.List as L
+import Numeric (showFFloat)
 
 import Data.Aeson (eitherDecode)
 import Data.Geospatial (GeoFeatureCollection (..))
@@ -58,7 +61,7 @@ app conn ghis = do
 				tr_ $ th_ "Rank" >> th_ "Team" >> th_ "Profit"
 				case sb of
 					[] -> sequence [tr_ (td_ "-" >> td_ "No scores yet" >> td_ "-") ]
-					scores -> sequence [tr_ (td_ (hshow rank) >> td_ (toHtml team) >> td_ ("$" <> hshow score))
+					scores -> sequence [tr_ (td_ (hshow rank) >> td_ (toHtml team) >> td_ (toHtml $ "$" ++ format score))
 					                   | (rank, (team, score)) <- zip [1..] sb]
 
 	get "/submit" $ html . renderText $ do
@@ -114,6 +117,12 @@ type SubmissionResult = (Int, Float)
 
 fileMaxMegabytes = 3.0
 toBytes = (* 1024) . (* 1024)
+
+format x = h++t
+    where
+        sp = break (== '.') $ showFFloat (Just 2) x ""
+        h = reverse (L.intercalate "," $ chunksOf 3 $ reverse $ fst sp) 
+        t = snd sp
 
 submit :: Connection -> HashMap [Double] GHI -> Team -> ByteString -> ActionM Submission
 submit conn ghis team f = if fromIntegral (BS.length f) > toBytes fileMaxMegabytes
