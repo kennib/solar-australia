@@ -75,32 +75,10 @@ extractGhi fname = do
 		Left err -> return $ Left err
 
 toDoubleVec = map (float2Double . toFloat) . SV.toList
-
-getTiles :: SV.Vector CDouble -> SV.Vector CDouble -> [[Polygon CDouble]]
-getTiles lat lng = squares lng' lat'
-	where lat' = SV.toList lat
-	      lng' = SV.toList lng
-
-squares :: [a] -> [b] -> [[[(a, b)]]]
-squares xs ys = map (map concat . adjacents) $ transpose $ map adjacents points
-	where points = [ [ (x, y) | x <- xs ] | y <- ys ]
-
-adjacents :: [a] -> [[a]]
-adjacents (x:x':xs) = [x, x'] : adjacents (x':xs)
-adjacents (x:[]) = []
-adjacents [] = []
+getGhi ghis = [SV.toList ghis]
 
 point :: Latitude -> Longitude -> GeospatialGeometry
 point lat lng = Point $ GeoPoint [lng, lat]
-
-getGhi :: SV.Vector CDouble -> [[CDouble]]
-getGhi ghis = [SV.toList ghis]
-
-tilePolygons :: [[Polygon CDouble]] -> [GeospatialGeometry]
-tilePolygons tiles = polygons
-	where polygons = map (Polygon . GeoPolygon) $ map (ring . map coords) $ concat tiles
-	      coords (lat, lng) = [float2Double $ toFloat lat, float2Double $ toFloat lng]
-	      ring (a:b:c:ds) = [makeLinearRing a b c ds]
 
 geojson :: [GeospatialGeometry] -> [[[CDouble]]] -> GeoFeatureCollection PropsGHI 
 geojson polys ds = GeoFeatureCollection Nothing features 
