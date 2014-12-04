@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-
 import Prelude hiding (putStr)
 
 import Control.Monad (forM, mapM)
@@ -20,13 +19,12 @@ import GHC.Float (float2Double)
 import System.Directory
 import System.FilePath
 
+import Data.SolarPower
+
 type SVRet a = IO (Either NcError (SV.Vector a))
 
 type Point a = (CDouble, CDouble)
 type Polygon a = [Point a]
-type GHI a = a
-
-data Props = Props { avgGHI :: GHI Float }
 
 main = do
 	let dir = "../data"
@@ -91,24 +89,25 @@ adjacents (x:x':xs) = [x, x'] : adjacents (x':xs)
 adjacents (x:[]) = []
 adjacents [] = []
 
-getGhi :: SV.Vector CDouble -> [[GHI CDouble]]
+getGhi :: SV.Vector CDouble -> [[CDouble]]
 getGhi ghis = [SV.toList ghis]
 
 tilePolygons :: [[Polygon CDouble]] -> [GeospatialGeometry]
 tilePolygons tiles = polygons
 	where polygons = map (Polygon . GeoPolygon) $ map (ring . map coords) $ concat tiles
 	      coords (lat, lng) = [float2Double $ toFloat lat, float2Double $ toFloat lng]
-	      ring (a:b:c:ds) = [makeLinearRing a b c ds]
+	      ring (a:b:c:ds) = [makeLinearRing b c a ds]
 
-geojson :: [GeospatialGeometry] -> [[[CDouble]]] -> GeoFeatureCollection Props 
+geojson :: [GeospatialGeometry] -> [[[CDouble]]] -> GeoFeatureCollection PropsGHI 
 geojson polys ds = GeoFeatureCollection Nothing features 
 	where features = zipWith (\p d -> GeoFeature Nothing p d Nothing) polys props
-	      props = map Props $ map average $ map (filter (-999 /=)) $ transpose $ map (map toFloat . concat) ds 
+	      props = map prop $ transpose $ map (map toFloat . concat) ds 
+	      prop = PropsGHI . average . filter (-999 /=)
 	      average [] = 0
 	      average x = sum x / (fromIntegral $ length x)
 
 toFloat :: RealFloat a => a -> Float
 toFloat = uncurry encodeFloat . decodeFloat
 
-instance ToJSON Props where
-	toJSON (Props ghi) = object ["avgGHI" .= ghi]
+instance ToJSON PropsGHI where
+	toJSON (PropsGHI ghi) = object ["avgGHI" .= ghi]
