@@ -35,3 +35,8 @@ table {
 th, td {
 	text-align: left;
 }
+
+pre {
+	padding: 10px;
+	background-color: #eee;
+}
