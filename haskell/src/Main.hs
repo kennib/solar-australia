@@ -55,8 +55,10 @@ app conn ghis = do
 			link_ [rel_ "stylesheet", href_ "main.css"]
 			table_ $ do
 				tr_ $ th_ "Rank" >> th_ "Team" >> th_ "Profit"
-				sequence [tr_ (td_ (hshow rank) >> td_ (toHtml team) >> td_ ("$" <> hshow score))
-				          | (rank, (team, score)) <- zip [1..] sb]
+				case sb of
+					[] -> sequence [tr_ (td_ "-" >> td_ "No scores yet" >> td_ "-") ]
+					scores -> sequence [tr_ (td_ (hshow rank) >> td_ (toHtml team) >> td_ ("$" <> hshow score))
+					                   | (rank, (team, score)) <- zip [1..] sb]
 
 	get "/submit" $ html . renderText $ do
 		link_ [rel_ "stylesheet", href_ "main.css"]
