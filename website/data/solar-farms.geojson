@@ -1,0 +1,6 @@
+{"features":[
+{"geometry":{"coordinates":[117.69999694824219,-23.75],"type":"Point"},"type":"Feature","properties":{"avgGHI":31.14}},
+{"geometry":{"coordinates":[124.75,-21.75],"type":"Point"},"type":"Feature","properties":{"avgGHI":31.27}},
+{"geometry":{"coordinates":[136.0,-29.0],"type":"Point"},"type":"Feature","properties":{"avgGHI":30.16}}
+],
+"type":"FeatureCollection"}

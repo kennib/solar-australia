@@ -21,9 +21,9 @@ The average GHI indicates how many MegaJoules per square metre that area recieve
 You can [download the data as GeoJSON here](/data/ghis.geojson.zip).
 
 ### Output data
-Your output should be a subset of the tiles in the GHI GeoJSON.
-Each tile in the GeoJSON should have the property `panels` which indicates the number of panels in the solar farm.
-Don't include panels which do not have solar farms on them.
+Your output should be a subset of the points given in the GHI GeoJSON.
+
+You can [download an example of GeoJSON with three solar farms here](/data/solar-farms.geojson).
 
 ### Submission
 
@@ -43,7 +43,7 @@ energy-needed = 239.3e12 KWh
 
 ---
 
-The amount of money tha can be made from the solar farms is
+The amount of money that can be made from the solar farms is
 ```
 profit = (min(energy-produced, energy-needed) * energy-price) - (solar-farm-cost * number-of-solar-farms)
 where (energy-price) = $0.12 per KWh

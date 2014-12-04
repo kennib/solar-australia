@@ -39,7 +39,8 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <p>We've prepare the data as <a href="http://geojson.org/geojson-spec.html">GeoJSON file</a>. The dataset consists of 839 by 679 points at the centre of areas 5km high and 5km wide. For each tile there is an <code>avgGHI</code> property. The average GHI indicates how many MegaJoules per square metre that area recieves per day from the Sun.</p>
 <p>You can <a href="/data/ghis.geojson.zip">download the data as GeoJSON here</a>.</p>
 <h3 id="output-data">Output data</h3>
-<p>Your output should be a subset of the tiles in the GHI GeoJSON. Each tile in the GeoJSON should have the property <code>panels</code> which indicates the number of panels in the solar farm. Don't include panels which do not have solar farms on them.</p>
+<p>Your output should be a subset of the points given in the GHI GeoJSON.</p>
+<p>You can <a href="/data/solar-farms.geojson">download an example of GeoJSON with three solar farms here</a>.</p>
 <h3 id="submission">Submission</h3>
 <p>You can submit your file from the command line via curl. Here's an example of a submission of <code>solarfarms.geojson</code>:</p>
 <pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">curl</span> localhost:3000/submit --form <span class="st">&quot;submission=@solarfarms.geojson&quot;</span> --form <span class="st">&quot;team=winners&quot;</span>
@@ -48,7 +49,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <p>Australia needs a lot of energy per year. The amount you should be able to produce is</p>
 <pre><code>energy-needed = 239.3e12 KWh</code></pre>
 <hr />
-<p>The amount of money tha can be made from the solar farms is</p>
+<p>The amount of money that can be made from the solar farms is</p>
 <pre><code>profit = (min(energy-produced, energy-needed) * energy-price) - (solar-farm-cost * number-of-solar-farms)
 where (energy-price) = $0.12 per KWh</code></pre>
 <p>Note that you can only sell energy if it will be used.</p>
