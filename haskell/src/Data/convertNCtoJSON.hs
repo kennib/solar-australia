@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Prelude hiding (putStr)
+
 import Control.Monad (forM, mapM)
 import Data.List (transpose)
 import Data.ByteString.Lazy.Internal (ByteString)
+import Data.ByteString.Lazy (putStr)
 
 import Data.NetCDF
 import Data.NetCDF.Vector
