@@ -30,11 +30,17 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <body>
 <div id="solar-powering-australia" class="section level1">
 <h1>Solar Powering Australia</h1>
-<p><a href="/scoreboard">View the scoreboard</a></p>
+<div id="wlan-0a1180d4.ipt.nicta.com.au3000" class="section level2">
+<h2><a href="wlan-0a1180d4.ipt.nicta.com.au:3000"><code>wlan-0a1180d4.ipt.nicta.com.au:3000</code></a></h2>
+</div>
 <div id="the-aim" class="section level2">
 <h2>The aim</h2>
 <p>Your aim is to power the 15 largest cities in Australia completely with Solar Energy. The team that can power Australia while making the most money will be victorious!</p>
 <p>Place solar farms in such a way that you can minimize costs and maximize revenues. The best areas to place solar farms will be those that are given the most energy from the Sun and are the closest to the cities that need the most power.</p>
+</div>
+<div id="the-scoreboard" class="section level2">
+<h2>The scoreboard</h2>
+<p><a href="/scoreboard">View the scoreboard</a></p>
 </div>
 <div id="the-details" class="section level2">
 <h2>The details</h2>
@@ -63,7 +69,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="command-line" class="section level4">
 <h4>Command line</h4>
 <p>You can submit your file from the command line via curl. Here's an example of a submission of <code>solarfarms.geojson</code>:</p>
-<pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">curl</span> localhost:3000/submit --form <span class="st">&quot;submission=@solarfarms.geojson&quot;</span> --form <span class="st">&quot;team=winners&quot;</span>
+<pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">curl</span> wlan-0a1180d4.ipt.nicta.com.au:3000/submit --form <span class="st">&quot;submission=@solarfarms.geojson&quot;</span> --form <span class="st">&quot;team=winners&quot;</span>
 <span class="kw">Thanks</span> team <span class="st">&#39;winners&#39;</span>! You are ranked 1. With a score of 1.337e8</code></pre>
 </div>
 </div>

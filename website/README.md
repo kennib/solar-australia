@@ -1,6 +1,6 @@
 # Solar Powering Australia
 
-[View the scoreboard](/scoreboard)
+## [`wlan-0a1180d4.ipt.nicta.com.au:3000`](wlan-0a1180d4.ipt.nicta.com.au:3000)
 
 ## The aim
 Your aim is to power the 15 largest cities in Australia completely with Solar Energy.
@@ -9,6 +9,9 @@ The team that can power Australia while making the most money will be victorious
 Place solar farms in such a way that you can minimize costs and maximize revenues.
 The best areas to place solar farms will be those that are given the most energy from the Sun
 and are the closest to the cities that need the most power.
+
+## The scoreboard
+[View the scoreboard](/scoreboard)
 
 ## The details
 ### Input data
@@ -47,7 +50,7 @@ You can submit your file from the command line via curl.
 Here's an example of a submission of `solarfarms.geojson`:
 
 ```bash
-$ curl localhost:3000/submit --form "submission=@solarfarms.geojson" --form "team=winners"
+$ curl wlan-0a1180d4.ipt.nicta.com.au:3000/submit --form "submission=@solarfarms.geojson" --form "team=winners"
 Thanks team 'winners'! You are ranked 1. With a score of 1.337e8
 ```
 
