@@ -1,0 +1,170 @@
+{
+	"type": "FeatureCollection",
+	"features": [
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [151.207, -33.868]
+			},
+			"properties": {
+				"city": "Sydney",
+				"population": "4,667,283"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [144.963, -37.814]
+			},
+			"properties": {
+				"city": "Melbourne",
+				"population": "4,246,345"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [153.028, -27.468]
+			},
+			"properties": {
+				"city": "Brisbane",
+				"population": "2,189,878"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [115.861, -31.952]
+			},
+			"properties": {
+				"city": "Perth",
+				"population": "1,897,548"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [138.599, -34.929]
+			},
+			"properties": {
+				"city": "Adelaide",
+				"population": "1,277,174"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [153.431, -28]
+			},
+			"properties": {
+				"city": "Gold Coast",
+				"population": "590,889"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [151.776, -32.927]
+			},
+			"properties": {
+				"city": "Newcastle",
+				"population": "418,958"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [149.128, -35.283]
+			},
+			"properties": {
+				"city": "Canberra",
+				"population": "411,609"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [153.0667, -26.6500]
+			},
+			"properties": {
+				"city": "Sunshine Coast",
+				"population": "285,169"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [150.893, -34.424]
+			},
+			"properties": {
+				"city": "Wollongong",
+				"population": "282,099"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [147.3250, -42.8806]
+			},
+			"properties": {
+				"city": "Hobart",
+				"population": "216,959"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [144.3500, -38.1500]
+			},
+			"properties": {
+				"city": "Geelong",
+				"population": "179,042"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [146.8183, -19.2564]
+			},
+			"properties": {
+				"city": "Townsville",
+				"population": "171,971"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [145.7753, -16.9256]
+			},
+			"properties": {
+				"city": "Cairns",
+				"population": "142,528"
+			}
+		},
+		{
+			"type":"Feature",
+			"geometry": {
+				"type":"Point",
+				"coordinates": [130.8333, -12.4500]
+			},
+			"properties": {
+				"city": "Darwin",
+				"population": "131,678"
+			}
+		}
+	]
+}
