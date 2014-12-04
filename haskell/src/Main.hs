@@ -7,6 +7,7 @@ import Data.Text.Lazy as Text
 import Data.ByteString.Lazy.Char8 as BS
 import Control.Monad.IO.Class
 import Control.Applicative
+import Data.HashMap.Lazy (HashMap(..))
 
 import Data.Aeson (eitherDecode)
 import Data.Geospatial (GeoFeatureCollection (..))
@@ -99,7 +100,7 @@ type SubmissionResult = (Int, Float)
 fileMaxMegabytes = 3.0
 toBytes = (* 1024) . (* 1024)
 
-submit :: Connection -> [GHI] -> Team -> ByteString -> ActionM Submission
+submit :: Connection -> HashMap [Double] GHI -> Team -> ByteString -> ActionM Submission
 submit conn ghis team f = if fromIntegral (BS.length f) > toBytes fileMaxMegabytes
 	then return $ Left TooLarge
 	else case (f, eitherDecode f) of

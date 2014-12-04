@@ -28,6 +28,7 @@ executable solar-australia
                ,       bytestring >=0.10 && <0.11
                ,       sqlite-simple >=0.4 && <0.5
                ,       transformers >=0.3 && <0.4
+               ,       unordered-containers >=0.2.3 && <0.3
                ,       aeson >=0.7
                ,       lucid >=2.4 && <3
                ,   lens            == 4.1.*

@@ -1,7 +1,10 @@
 module Game.SolarPower where
 
+import Prelude hiding (lookup)
+
 import GHC.Float (double2Float)
 import Data.List (minimumBy)
+import Data.HashMap.Lazy (HashMap(..), lookup)
 
 import Data.SolarPower
 
@@ -15,11 +18,11 @@ farmEfficiency = 0.4 :: Float {- unitless -}
 farmArea = 5000 * 5000 :: Float {- m^2 -}
 farmCost = 2.5e9 :: Float {- $ -}
 
-score :: [SolarArray] -> [GHI] -> Float
+score :: [SolarArray] -> HashMap [Double] GHI -> Float
 score arrays ghis = sum [ profits city $
                           unzip [(farmEnergy ghi * (1 - transmissionLoss coords city), farmCost)
-					            | GHI coords ghi <- ghis
-					            , SolarArray coords' <- arrays
+					            | SolarArray coords <- arrays
+                                , let Just (GHI coords' ghi) = lookup coords ghis
                                 , city == closestCity coords
 					            , coords == coords']
 					    | city <- cities]

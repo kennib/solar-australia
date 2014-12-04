@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Data.SolarPower where
 
+import Data.HashMap.Lazy (HashMap(..), fromList)
+
 import Data.Aeson (FromJSON)
 import Data.Aeson.Types
 import Data.Geospatial hiding (properties)
-import Data.LinearRing
 
 data SolarArray = SolarArray [Double]
 	deriving (Show)
@@ -20,8 +21,8 @@ data DontCare = DontCare
 readSolarArrays :: GeoFeatureCollection DontCare -> [SolarArray]
 readSolarArrays geo = map SolarArray (coords geo)
 
-readGHIs :: GeoFeatureCollection PropsGHI -> [GHI]
-readGHIs geo = zipWith GHI (coords geo) (ghis geo)
+readGHIs :: GeoFeatureCollection PropsGHI -> HashMap [Double] GHI
+readGHIs geo = fromList $ zip (coords geo) $ zipWith GHI (coords geo) (ghis geo)
 ghis = map averageGHI . properties
 
 properties = map _properties . _geofeatures
