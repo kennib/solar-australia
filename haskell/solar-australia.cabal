@@ -32,6 +32,8 @@ executable solar-australia
                ,       split >=0.2.2 && <0.3
                ,       aeson >=0.7
                ,       lucid >=2.4 && <3
+               ,       dimensional >= 0.13 && <0.14
+               ,       numtype
                ,   lens            == 4.1.*
                ,   semigroups      >= 0.13
                ,   transformers    == 0.3.*
