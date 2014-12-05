@@ -87,9 +87,9 @@ So each farm is 5km by 5km and costs $2.5 billion dollars.
 ```
 solar-farm-cost = $2.5e9
 
-solar-farm-energy = (ghi MJ/m^2/day) * (5000 m * 5000 m) * solar-farm-efficiency * (MJ/KWh) * (365 days) * (1 - transmission-loss)
+solar-farm-energy = (ghi MJ/m^2/day) * (5000 m * 5000 m) * solar-farm-efficiency * (KWh/MJ) * (365 days) * (1 - transmission-loss)
 where
-(MJ/KWh) = 3.6
+(KWh/MJ) = 3.6
 solar-farm-efficiency = 0.4
 transmission-loss = (distance-to-city metres) * (1e-7 per metre)
 ```
