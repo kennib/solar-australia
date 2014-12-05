@@ -12,29 +12,33 @@ import Data.HashMap.Lazy (HashMap(..), lookup)
 
 import Data.SolarPower
 
-data City = City { name :: String, location :: [Double] {- lng, lat -}, population :: Int }
-	deriving (Eq, Ord)
+data City = City { name :: String
+                 , location :: [Double] {- lng, lat -}
+                 , population :: Int
+                 } deriving (Eq, Ord)
 
 energyUnitPrice = 0.12 *~ (usdollar / kWh)
 energyPerPersonPerYear = 10712.18 *~ (kWh / person / year)
-transmissionLossRate = 1e-7 *~ per metre
+transmissionLossRate = 1e-7 *~ (one / metre)
 farmEfficiency = 0.4 *~ one
 farmArea = 25 *~ square (kilo metre)
 farmCost = 2.5 *~ bn usdollar
 
 person = one
-per = (one /)
 kWh = kilo (watt * hour)
 
+-- To get an approximate exchange rate, try
+-- https://www.google.com/search?q=aud+usd+exchange+rate
+audollar = prefix 0.84 usdollar
+
 score :: [SolarArray] -> HashMap [Double] GHI -> Float
-score arrays ghis = profit /~ usdollar
-	where profits city (energies, costs) =
-	              revenue (sum energies) city - sum costs
+score arrays ghis = profit /~ audollar
+	where profits city (energies, costs) = revenue (sum energies) city - sum costs
 	      profit = sum [ profits city $
 	                     unzip [(farmEnergy ghi * (_1 - transmissionLoss coords city), farmCost)
 	                           | SolarArray coords <- arrays
 	                           , let Just (GHI coords' ghi') = lookup coords ghis
-	                           , let ghi = ghi' *~ (mega joule / square meter / day) :: PowerPerArea Float
+	                           , let ghi = ghi' *~ (mega joule / square meter / day)
 	                           , city == closestCity coords
 	                           , coords == coords']
 	                   | city <- cities]
@@ -42,10 +46,9 @@ score arrays ghis = profit /~ usdollar
 type PowerPerArea = Quantity (Dim Zero Pos1 Neg3 Zero Zero Zero Zero)
 
 revenue :: Energy Float -> City -> Currency Float
-revenue energy city = energy' * energyUnitPrice
-	where targetEnergy = people * energyPerPersonPerYear * (1 *~ year) :: Energy Float
-	      people = (fromIntegral (population city) *~ one) :: Dimensionless Float
-	      energy' = min energy targetEnergy :: Energy Float
+revenue energy city = min energy targetEnergy * energyUnitPrice
+	where targetEnergy = people * energyPerPersonPerYear * (1 *~ year)
+	      people = (fromIntegral (population city) *~ one)
 
 farmEnergy :: PowerPerArea Float -> Energy Float
 farmEnergy ghi = ghi * farmArea * farmEfficiency * (1 *~ year)
@@ -78,9 +81,8 @@ cities = [ City "Sydney"         [151.207,  (-33.868)]  4667283
          , City "Darwin"         [130.8333, (-12.4500)] 131678
          ]
 
---Taken from http://rosettacode.org/wiki/Haversine_formula#Haskell
-
 -- The haversine of an angle.
+-- Taken from http://rosettacode.org/wiki/Haversine_formula#Haskell
 hsin t = let u = sin (t / _2) in u * u
  
 -- The distance between two points, given by latitude and longtitude, on a
