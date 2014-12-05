@@ -1,6 +1,10 @@
 module Game.SolarPower where
 
-import Prelude hiding (lookup)
+import qualified Prelude
+import Numeric.Units.Dimensional.Prelude hiding (lookup)
+import Numeric.Units.Dimensional.NonSI (year)
+import Numeric.Units.Dimensional.Currency
+import Numeric.NumType (Zero, Pos1, Neg3)
 
 import GHC.Float (double2Float)
 import Data.List (minimumBy)
@@ -11,37 +15,48 @@ import Data.SolarPower
 data City = City { name :: String, location :: [Double] {- lng, lat -}, population :: Int }
 	deriving (Eq, Ord)
 
-energyUnitPrice = 0.12 :: Float {- $ per kWh -}
-energyPerPersonPerYear = 10712.18 {- kwh per person per year -}
-transmissionLossRate = 1e-7 :: Float {- m^-1 -}
-farmEfficiency = 0.4 :: Float {- unitless -}
-farmArea = 5000 * 5000 :: Float {- m^2 -}
-farmCost = 2.5e9 :: Float {- $ -}
+energyUnitPrice = 0.12 *~ (usdollar / kWh)
+energyPerPersonPerYear = 10712.18 *~ (kWh / person / year)
+transmissionLossRate = 1e-7 *~ per metre
+farmEfficiency = 0.4 *~ one
+farmArea = 25 *~ square (kilo metre)
+farmCost = 2.5 *~ bn usdollar
+
+person = one
+per = (one /)
+kWh = kilo (watt * hour)
 
 score :: [SolarArray] -> HashMap [Double] GHI -> Float
-score arrays ghis = sum [ profits city $
-                          unzip [(farmEnergy ghi * (1 - transmissionLoss coords city), farmCost)
-					            | SolarArray coords <- arrays
-                                , let Just (GHI coords' ghi) = lookup coords ghis
-                                , city == closestCity coords
-					            , coords == coords']
-					    | city <- cities]
-	where profits city (energies, costs) = revenue (sum energies) city - sum costs
+score arrays ghis = profit /~ usdollar
+	where profits city (energies, costs) =
+	              revenue (sum energies) city - sum costs
+	      profit = sum [ profits city $
+	                     unzip [(farmEnergy ghi * (_1 - transmissionLoss coords city), farmCost)
+	                           | SolarArray coords <- arrays
+	                           , let Just (GHI coords' ghi') = lookup coords ghis
+	                           , let ghi = ghi' *~ (mega joule / square meter / day) :: PowerPerArea Float
+	                           , city == closestCity coords
+	                           , coords == coords']
+	                   | city <- cities]
 
-revenue :: Float {- MJ per m^2 -} -> City -> Float {- $ -}
-revenue energy city = min energy targetEnergy * energyUnitPrice
-	where targetEnergy = (fromIntegral $ population city) * energyPerPersonPerYear
+type PowerPerArea = Quantity (Dim Zero Pos1 Neg3 Zero Zero Zero Zero)
 
-farmEnergy :: Float {- MJ per m^2 -} -> Float {- kWh -}
-farmEnergy ghi = ghi * farmArea * farmEfficiency * 3.6 * 365
+revenue :: Energy Float -> City -> Currency Float
+revenue energy city = energy' * energyUnitPrice
+	where targetEnergy = people * energyPerPersonPerYear * (1 *~ year) :: Energy Float
+	      people = (fromIntegral (population city) *~ one) :: Dimensionless Float
+	      energy' = min energy targetEnergy :: Energy Float
 
-transmissionLoss :: [Double] {- lng, lat -} -> City -> Float
+farmEnergy :: PowerPerArea Float -> Energy Float
+farmEnergy ghi = ghi * farmArea * farmEfficiency * (1 *~ year)
+
+transmissionLoss :: [Double] {- lng, lat -} -> City -> Dimensionless Float
 transmissionLoss coords city = cityDist coords city * transmissionLossRate
 
 closestCity :: [Double] {- lng, lat -} -> City
 closestCity coords = snd $ minimum [(cityDist coords city, city) | city <- cities]
 
-cityDist :: [Double] {- lng, lat -} -> City -> Float {- m -}
+cityDist :: [Double] {- lng, lat -} -> City -> Length Float
 cityDist coords city = earthDist (lat, lng) (lat', lng')
 	where (lng:lat:[]) = map double2Float $ coords
 	      (lng':lat':[]) = map double2Float $ location city
@@ -66,22 +81,18 @@ cities = [ City "Sydney"         [151.207,  (-33.868)]  4667283
 --Taken from http://rosettacode.org/wiki/Haversine_formula#Haskell
 
 -- The haversine of an angle.
-hsin t = let u = sin (t/2) in u*u
+hsin t = let u = sin (t / _2) in u * u
  
 -- The distance between two points, given by latitude and longtitude, on a
 -- circle.  The points are specified in radians.
-distRad radius (lat1, lng1) (lat2, lng2) =
+circleDist radius (lat1, lng1) (lat2, lng2) =
   let hlat = hsin (lat2 - lat1)
       hlng = hsin (lng2 - lng1)
       root = sqrt (hlat + cos lat1 * cos lat2 * hlng)
-  in 2 * radius * asin (min 1.0 root)
- 
--- The distance between two points, given by latitude and longtitude, on a
--- circle.  The points are specified in degrees.
-distDeg radius p1 p2 = distRad radius (deg2rad p1) (deg2rad p2)
-  where deg2rad (t, u) = (d2r t, d2r u)
-        d2r t = t * pi / 180
+  in _2 * radius * asin (min _1 root)
  
 -- The approximate distance, in metres, between two points on Earth.  
 -- The latitude and longtitude are assumed to be in degrees.
-earthDist = distDeg 6372.8e3
+earthDist p1' p2' = circleDist (6372.8 *~ kilo meter) p1 p2
+ where (p1, p2) = tmap (tmap (*~ degree)) (p1', p2')
+       tmap f (v1, v2) = (f v1, f v2)
